@@ -31,7 +31,7 @@ void loop() {
   //float f = dht.readTemperature(true);
 
   // Verifica se houve erro na leitura
-  if (isnan(h) || isnan(t) || isnan(f)) { Serial.println(F("*** Falha na leitura do sensor! ***")); return; }
+  if (isnan(h) || isnan(t)) { Serial.println(F("*** Falha na leitura do sensor! ***")); return; }
 
   // Calcular o índice de calor em Fahrenheit (padrão)
   // float hif = dht.computeHeatIndex(f, h);
