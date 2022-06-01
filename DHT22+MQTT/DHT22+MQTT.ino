@@ -39,6 +39,5 @@ void loop() {
   // Calcular o índice de calor em Celsius (isFahrenheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
 
-  Serial.print(F("Umidade: ")); Serial.print(h); Serial.print(F("%  Temperatura: ")); Serial.print(t); Serial.print(F("°C ")); Serial.print(F(" Indice de calor: "));Serial.print(hic);
-  Serial.println(F("°C "));
+  Serial.print(F("Umidade: ")); Serial.print(h); Serial.print(F("%  Temperatura: ")); Serial.print(t); Serial.print(F("°C ")); Serial.print(F(" Indice de calor: ")); Serial.print(hic); Serial.println(F("°C "));
 }
