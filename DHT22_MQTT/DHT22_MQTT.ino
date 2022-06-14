@@ -1,43 +1,135 @@
 /*
   DHT22 + MQTT
   O programa faz a leitura de temperatura e umidade através do sensor DHT22 e transmite para um broker MQTT
- REQUIRES the following Arduino libraries:
- - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
- - Adafruit Unified Sensor Lib: https://github.com/adafruit/Adafruit_Sensor
+  Placa utilizada: ESP32
+  Broker MQTT: Mosquitto
+  Servidor do Broker: Raspberry Pi 3
+  Display dos dados lidos pela ESP32 será feito via Node-RED rodando na RPi3
 */
 
+//BIBLIOTECAS
 #include "DHT.h"
+#include <WiFi.h>
+#include <PubSubClient.h>
 
-#define DHTPIN 4        // Pino D4 conectado ao sensor DHT22
-#define DHTTYPE DHT22   // Modelo do sensor: DHT 22
+//----------- Variáveis e construtores ----------------
+//Entrar com o nome e a senha da sua rede WiFi 
+const char* ssid = "";
+const char* password = "";
 
-DHT dht(DHTPIN, DHTTYPE);   //Inicializa a leitura do sensor
+//Entrar com o IP fixo do broker MQTT e a porta
+const char* mqtt_server = ""
+const int mqtt_port = 1883;
 
-void setup() {
+//Entrar com usuário e senha do broker MQTT
+const char* mqtt_user = "";
+const char* mqtt_password = "";
+
+//Definir tópicos a publicar
+const char* mqtt_topic_temp = "esp32/temp";
+const char* mqtt_topic_umid = "esp32/umid";
+
+//Iniciando construtores WiFI e PubSubClient
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+//Variável para atualização de leitura usando millis()
+long lastMsg = 0;
+//Intervalo de envio das mensagens
+int intervalo = 10000;
+
+// Pino D4 conectado ao sensor DHT22
+#define DHTPIN 4
+// Modelo do sensor: DHT 22
+#define DHTTYPE DHT22
+
+//Construtor que inicializa a leitura do sensor
+DHT dht(DHTPIN, DHTTYPE);
+//-----------------------------------------------------
+
+
+void setup()
+{
   Serial.begin(9600);
+
+  setup_wifi();
+  client.setServer(mqtt_server, mqtt_port);
   Serial.println(F("DHT22 - TEMPERATURA E UMIDADE"));
   dht.begin();
 }
 
-void loop() {
-  // Aguarda 2 seg entre cada medição
-  delay(2000);
+void setup_wifi()
+{
+  delay(10);
+  Serial.println();
+  Serial.print("Conectando a rede wifi: "); Serial.println(ssid);
 
-  // Leituar
-  float h = dht.readHumidity();
+  WiFi.begin(ssid,password);
+
+  while(WiFi.status() != WL_CONNECTED)
+  {
+    delay(500); Serial.print(".");  
+  }
+
+  Serial.println("");
+  Serial.println("Wifi conectado!");
+  Serial.print("IP "); Serial.println(Wifi.localIP());
+}
+
+float temp()
+{
   float t = dht.readTemperature();
+  Serial.print(F("Temperatura: ")); Serial.print(t); Serial.println(F("°C "));
+  return t;
+}
 
-  // Para ler a temperatura em Fahrenheit basta colocar o argumento 'true' na função readTemperature (isFahrenheit = true)
-  //float f = dht.readTemperature(true);
+float umid()
+{
+  float h = dht.readHumidity();
+  Serial.print(F("Umidade: ")); Serial.print(h); Serial.println(F("% "));
+  return h;
+}
 
-  // Verifica se houve erro na leitura
-  if (isnan(h) || isnan(t)) { Serial.println(F("*** Falha na leitura do sensor! ***")); return; }
+void reconectabroker()
+{
+  //Conexao ao broker MQTT
+  client.setServer(mqtt_server, mqtt_port);
+  while (!client.connected())
+  {
+    Serial.println("Conectando ao broker MQTT...");
+    if (client.connect("ESP32Client", mqtt_user, mqtt_password ))
+    {
+      Serial.println("Conectado ao broker!");
+    }
+    else
+    {
+      Serial.print("Falha na conexao ao broker - Estado: ");
+      Serial.print(client.state());
+      delay(2000);
+    }
+  }
+}
 
-  // Calcular o índice de calor em Fahrenheit (padrão)
-  // float hif = dht.computeHeatIndex(f, h);
-  
-  // Calcular o índice de calor em Celsius (isFahrenheit = false)
-  float hic = dht.computeHeatIndex(t, h, false);
 
-  Serial.print(F("Umidade: ")); Serial.print(h); Serial.print(F("%  Temperatura: ")); Serial.print(t); Serial.print(F("°C ")); Serial.print(F(" Indice de calor: ")); Serial.print(hic); Serial.println(F("°C "));
+void loop() 
+{
+  if (!client.connected()) { reconectabroker(); }
+
+  long now = millis();
+  if(now - lastMsg > intervalo)
+  {
+    lastMsg = now;
+    //Envia leitura de umidade para o broker
+    char umidString[8];
+    dtostrf(umid(), 1, 2, umidString);
+    Serial.print("Umidade: "); Serial.println(umidString);
+    client.publish(mqtt_topic_umid, humString);
+
+    //Envia leitura de temperatura para o broker
+    char tempString[8];
+    dtostrf(temp(), 1, 2, tempString);
+    Serial.print("Temperatura: "); Serial.println(tempString);
+    client.publish(mqtt_topic_temp, tempString);
+  }
+    
 }
