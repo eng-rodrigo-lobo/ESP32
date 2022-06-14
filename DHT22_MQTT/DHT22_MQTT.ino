@@ -18,7 +18,7 @@ const char* ssid = "";
 const char* password = "";
 
 //Entrar com o IP fixo do broker MQTT e a porta
-const char* mqtt_server = ""
+const char* mqtt_server = "";
 const int mqtt_port = 1883;
 
 //Entrar com usuário e senha do broker MQTT
@@ -73,7 +73,7 @@ void setup_wifi()
 
   Serial.println("");
   Serial.println("Wifi conectado!");
-  Serial.print("IP "); Serial.println(Wifi.localIP());
+  Serial.print("IP "); Serial.println(WiFi.localIP());
 }
 
 float temp()
@@ -123,7 +123,7 @@ void loop()
     char umidString[8];
     dtostrf(umid(), 1, 2, umidString);
     Serial.print("Umidade: "); Serial.println(umidString);
-    client.publish(mqtt_topic_umid, humString);
+    client.publish(mqtt_topic_umid, umidString);
 
     //Envia leitura de temperatura para o broker
     char tempString[8];
