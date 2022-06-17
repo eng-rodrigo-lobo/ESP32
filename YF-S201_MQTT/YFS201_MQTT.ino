@@ -53,6 +53,12 @@ unsigned int totalMilliLitres;
 float flowLitres;
 float totalLitres;
 
+void IRAM_ATTR pulseCounter()
+{
+  pulseCount++;
+}
+
+
 //--------------------------------------------------------
 //------------------------ SETUP -------------------------
 //--------------------------------------------------------
@@ -115,7 +121,7 @@ void loop()
     //fluxo
     char fluxo_Str[8];
     dtostrf(flowRate, 1, 2, fluxo_Str);
-    client.publish(mqtt_topic_fluxo, fluxoStr);
+    client.publish(mqtt_topic_fluxo, fluxo_Str);
 
     //volume em litros
     char volume_L_Str[8];
@@ -128,11 +134,6 @@ void loop()
 //--------------------------------------------------------
 //------------------------ FUNÇÕES -----------------------
 //--------------------------------------------------------
-
-void IRAM_ATTR pulseCounter()
-{
-  pulseCount++;
-}
 
 void setup_wifi()
 {
