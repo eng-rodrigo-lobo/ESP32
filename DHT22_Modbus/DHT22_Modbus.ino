@@ -1,9 +1,9 @@
 /*
   DHT22 + Modbus TCP/IP
   O programa faz a leitura de temperatura e umidade através do sensor DHT22 e transmite os dados para um mestre TCP/IP
-  Placa utilizada: ESP8266
+  Placa utilizada: ESP32
   Modbus master: ScadaBR
-  Display dos dados lidos pela ESP8266 será feito via ScadaBR
+  Display dos dados lidos pela ESP32 será feito via ScadaBR
 
   ***** Especificações Arduino IDE para compilar ***** 
  * ESP32 Dev Module, upload speed 921600, freq. CPU 240 MHz (Wifi/BT),
@@ -101,7 +101,7 @@ int temp()
 {
   float t = dht.readTemperature();
   int t_out = int(t*10);
-  Serial.print(F("Temperatura: ")); Serial.print(t); Serial.print(F("°C - Ireg: "));Serial.println(t_out);
+  Serial.print(F("Temperatura: ")); Serial.print(t); Serial.print(F("°C - Input reg 0x30100: "));Serial.println(t_out);
   return t_out;
 }
 
@@ -109,6 +109,6 @@ int umid()
 {
   float h = dht.readHumidity();
   int h_out = int(h*10);
-  Serial.print(F("Umidade: ")); Serial.print(h); Serial.print(F("% - Ireg: "));Serial.println(h_out);
+  Serial.print(F("Umidade: ")); Serial.print(h); Serial.print(F("% - Input reg 0x30101: "));Serial.println(h_out);
   return h_out;
 }
